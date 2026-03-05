@@ -3,7 +3,8 @@
 
 #include <memory>
 #include <string>
-#include <types.hpp>
+
+#include "types.hpp"
 
 void fuzzyfind(std::unique_ptr<DesktopFile>& df, const std::string& inp);
 

@@ -1,3 +1,4 @@
+#include <complex>
 #include <fstream>
 #include <iostream>
 #include <cstddef>
@@ -98,5 +99,23 @@ namespace Utils {
 	void clean_space() {
 		std::cout << esc << erase_screen << esc << home << std::flush;
 		prepare_terminal(false);
+	}
+
+	const char* remove_trailing_space(std::string& inp) {
+		if (inp.back() == ' ') inp.pop_back();
+		return inp.c_str();
+	}
+
+	std::vector<std::string> get_args(const std::string& exec) {
+		std::string_view exec_view = exec;
+		std::vector<std::string> arg_list {};
+		std::size_t pos { 0 };
+		while ((pos = exec_view.find(" ", 0)) != std::string_view::npos) {
+			arg_list.emplace_back(exec_view.substr(0, pos));
+			exec_view.remove_prefix(pos + 1);
+		}
+		arg_list.emplace_back(exec_view);
+
+		return arg_list;
 	}
 }

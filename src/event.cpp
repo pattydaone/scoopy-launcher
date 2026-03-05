@@ -1,5 +1,7 @@
+#include <cstddef>
 #include <ctime>
 #include <iostream>
+#include <iterator>
 #include <ostream>
 #include <thread>
 
@@ -8,6 +10,7 @@
 #include "event.hpp"
 #include "ascii.hpp"
 #include "finder.hpp"
+#include "utilities.hpp"
 
 Event::Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs)
 	: df_files { as_structs }, exit { false }, selected_line(3) {
@@ -54,19 +57,28 @@ void Event::process_events() {
 
 void Event::launch() {
 	std::string exec { df_files[selected_line - 3]->Exec };
-	std::size_t i = exec.find("%") - 1;
+	std::size_t percent = exec.find("%");
+	if (percent != std::string::npos) --percent;
 	pid_t pid = fork();
 	if (pid < 0) {
 		// TODO: error
 	}
 	else if (pid == 0) {
 		setsid();
-		char* args[] = {NULL};
+		std::vector<std::string> arg_list = Utils::get_args(exec.substr(0,percent));
+		std::size_t arg_num = arg_list.size();
+		const char** args = new const char* [arg_num + 1];
+
+		for (std::size_t i = 0; i < arg_num; ++i) {
+			args[i] = arg_list[i].c_str();
+		}
+		args[arg_num] = NULL;
 		int fd = open("/dev/null", O_WRONLY);
 		dup2(fd, STDOUT_FILENO);
 		dup2(fd, STDERR_FILENO);
-		execvp(exec.substr(0,i).c_str(), args);
+		execvp(args[0], (char**)args);
 		close(fd);
+		delete[] args;
 	}
 	else {
 		exit = true;
