@@ -23,6 +23,7 @@ struct DesktopFile {
 	std::string Keywords {};
 	std::string Categories {};
 	int match_score = 0;
+	int saved_match_score;
 
     void set_entry(const std::string& key, const std::string& value) {
 		if (key == "Name") Name = value;

@@ -61,7 +61,11 @@ namespace Prsr {
 				key = line.substr(0, equals);
 				value = line.substr(equals + 1);
 
-				if (key == "Name") df_action.Name = value;
+				if (key == "Name") {
+					std::stringstream name; 
+					name << desktop_structs[dfoi]->Name << " - " << value;
+					df_action.Name = name.str();
+				}
 				else if (key == "Exec") {
 					df_action.Exec = value;
 					break;

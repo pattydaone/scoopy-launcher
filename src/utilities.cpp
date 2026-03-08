@@ -1,10 +1,9 @@
-#include <complex>
-#include <fstream>
 #include <iostream>
 #include <cstddef>
 #include <filesystem>
 #include <memory>
 #include <ostream>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "ascii.hpp"
 #include "utilities.hpp"
 #include "desktop_file_parser.hpp"
+#include "types.hpp"
 
 namespace Utils {
 	using namespace Ascii;
@@ -93,7 +93,7 @@ namespace Utils {
 
 		std::cout << go_to(2, 0);
 		for (int i = 0; i < size.ws_col; ++i) { std::cout << "━"; }
-		std::cout << esc << home << std::flush;
+		std::cout << esc << home << "> " << std::flush;
 	}
 
 	void clean_space() {

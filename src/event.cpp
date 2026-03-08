@@ -1,11 +1,12 @@
 #include <cstddef>
 #include <ctime>
 #include <iostream>
-#include <iterator>
 #include <ostream>
 #include <thread>
 
+#include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "event.hpp"
 #include "ascii.hpp"
@@ -13,13 +14,13 @@
 #include "utilities.hpp"
 
 Event::Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs)
-	: df_files { as_structs }, exit { false }, selected_line(3) {
+	: df_files { as_structs }, exit_proc { false }, selected_line(3) {
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 	event_queue.push_back(Events::redraw_screen);
 }
 
 void Event::event_loop(int frequency) {
-	while (!exit) {
+	while (!exit_proc) {
 		check_input();
 		if (!event_queue.empty()) process_events();
 		std::this_thread::sleep_for(std::chrono::milliseconds(frequency));
@@ -34,7 +35,7 @@ void Event::process_events() {
 	for (Events i : event_queue) {
 		switch (i) {
 			case (Events::exit): 
-				exit = true;
+				exit_proc = true;
 				break;
 			case (Events::highlight): // consider removing entirely
 				redraw_screen();
@@ -56,15 +57,19 @@ void Event::process_events() {
 }
 
 void Event::launch() {
+	df_files[selected_line - 3]->saved_match_score = 10;
 	std::string exec { df_files[selected_line - 3]->Exec };
 	std::size_t percent = exec.find("%");
-	if (percent != std::string::npos) --percent;
+	if (percent != std::string::npos) --percent; // Remove trailing space
 	pid_t pid = fork();
 	if (pid < 0) {
-		// TODO: error
+		Utils::clean_space();
+		std::cout << "fork failed :(" << std::flush;
+		exit(1);
 	}
 	else if (pid == 0) {
 		setsid();
+		setpgid(pid, pid);
 		std::vector<std::string> arg_list = Utils::get_args(exec.substr(0,percent));
 		std::size_t arg_num = arg_list.size();
 		const char** args = new const char* [arg_num + 1];
@@ -74,6 +79,7 @@ void Event::launch() {
 		}
 		args[arg_num] = NULL;
 		int fd = open("/dev/null", O_WRONLY);
+		dup2(fd, STDIN_FILENO); // surely redirecting stdin to a write only fd isnt a bad idea !
 		dup2(fd, STDOUT_FILENO);
 		dup2(fd, STDERR_FILENO);
 		execvp(args[0], (char**)args);
@@ -81,7 +87,7 @@ void Event::launch() {
 		delete[] args;
 	}
 	else {
-		exit = true;
+		exit_proc = true;
 	}
 }
 
@@ -98,13 +104,13 @@ void Event::redraw_screen() {
 			}
 			if (static_cast<int>(i + 3) == selected_line) {
 				std::cout << change_foreground_color(ForegroundColors::Magenta) << std::flush;
-				std::cout << df_files[i]->Name << std::flush;
+				std::cout << " >" << df_files[i]->Name << std::flush;
 				std::cout << change_foreground_color() << std::flush;
 				std::cout << beginning_rows_down(1) << std::flush;
 				continue;
 			}
 			std::cout << esc << erase_line << std::flush;
-			std::cout << df_files[i]->Name << std::flush;
+			std::cout << "▎ " << df_files[i]->Name << std::flush;
 			std::cout << beginning_rows_down(1) << std::flush;
 		}
 	}
@@ -118,12 +124,12 @@ void Event::redraw_screen() {
 			std::cout << esc << erase_line << std::flush;
 			if (static_cast<int>(i + 3) == selected_line) {
 				std::cout << change_foreground_color(ForegroundColors::Magenta);
-				std::cout << df_files[i]->Name << std::flush;
+				std::cout << " >" << df_files[i]->Name << std::flush;
 				std::cout << change_foreground_color() << std::flush;
 				std::cout << beginning_rows_down(1) << std::flush;
 				continue;
 			}
-			std::cout << df_files[i]->Name << std::flush;
+			std::cout << "▎ " << df_files[i]->Name << std::flush;
 			std::cout << beginning_rows_down(1) << std::flush;
 		}
 	}
@@ -161,29 +167,31 @@ void Event::check_input() {
 	get_input();
 	
 	if (input.length() > 0) {
-		if (input[0] == esc_key) {
-			add_event(Events::exit);
-			return;
-		}
+		for (auto i : input) {
+			if (i == esc_key) {
+				add_event(Events::exit);
+				return;
+			}
 
-		else if (input[0] == backspace) {
-			backspace_pressed();
-			return;
-		}
+			else if (i == backspace) {
+				backspace_pressed();
+				return;
+			}
 
-		else if (input[0] == tab) {
-			++selected_line;
-			if (selected_line > static_cast<int>(printed_entries + 2)) selected_line = 3;
-			add_event(Events::redraw_screen);
-			return;
-		}
+			else if (i == tab) {
+				++selected_line;
+				if (selected_line > static_cast<int>(printed_entries + 2)) selected_line = 3;
+				add_event(Events::redraw_screen);
+				return;
+			}
 
-		else if (input[0] == enter) {
-			add_event(Events::launch);
-			return;
+			else if (i == enter) {
+				add_event(Events::launch);
+				return;
+			}
+			actual_out += i;
+			std::cout << i << std::flush;
 		}
-		actual_out += input;
-		std::cout << input << std::flush;
 		add_event(Events::find);
 	}
 }

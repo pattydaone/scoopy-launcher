@@ -14,7 +14,7 @@ class Event {
 	Utils::DfGt df_gt;
 	std::vector<std::unique_ptr<DesktopFile>>& df_files;
 	std::vector<Events> event_queue;
-	bool exit;
+	bool exit_proc;
 	std::string input;
 	std::string actual_out;
 	int selected_line;

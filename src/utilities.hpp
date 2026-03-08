@@ -1,6 +1,7 @@
 #ifndef UTILITIES_HPP
 #define UTILITIES_HPP
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <array>
