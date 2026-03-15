@@ -57,7 +57,6 @@ void Event::process_events() {
 }
 
 void Event::launch() {
-	df_files[selected_line - 3]->saved_match_score = 10;
 	std::string exec { df_files[selected_line - 3]->Exec };
 	std::size_t percent = exec.find("%");
 	if (percent != std::string::npos) --percent; // Remove trailing space
@@ -102,15 +101,15 @@ void Event::redraw_screen() {
 				printed_entries = i;
 				break;
 			}
+			std::cout << esc << erase_line << std::flush;
 			if (static_cast<int>(i + 3) == selected_line) {
 				std::cout << change_foreground_color(ForegroundColors::Magenta) << std::flush;
-				std::cout << " >" << df_files[i]->Name << std::flush;
+				std::cout << " >" << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
 				std::cout << change_foreground_color() << std::flush;
 				std::cout << beginning_rows_down(1) << std::flush;
 				continue;
 			}
-			std::cout << esc << erase_line << std::flush;
-			std::cout << "▎ " << df_files[i]->Name << std::flush;
+			std::cout << "▎ " << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
 			std::cout << beginning_rows_down(1) << std::flush;
 		}
 	}
@@ -124,12 +123,12 @@ void Event::redraw_screen() {
 			std::cout << esc << erase_line << std::flush;
 			if (static_cast<int>(i + 3) == selected_line) {
 				std::cout << change_foreground_color(ForegroundColors::Magenta);
-				std::cout << " >" << df_files[i]->Name << std::flush;
+				std::cout << " >" << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
 				std::cout << change_foreground_color() << std::flush;
 				std::cout << beginning_rows_down(1) << std::flush;
 				continue;
 			}
-			std::cout << "▎ " << df_files[i]->Name << std::flush;
+			std::cout << "▎ " << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
 			std::cout << beginning_rows_down(1) << std::flush;
 		}
 	}

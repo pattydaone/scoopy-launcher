@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <memory>
 #include <ostream>
+#include <print>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -43,7 +44,19 @@ namespace Utils {
 		action.Keywords = poi->Keywords;
 	}
 
+	void truncate_comment(std::unique_ptr<DesktopFile>& df, int width) {
+		int printed_width = 2 + df->Name.length() + 2 + df->Comment.length();
+		if (width < printed_width) {
+			for (int i = 0; i < printed_width - width + 3; ++i) {
+				df->Comment.pop_back();
+			}
+			df->Comment += "...";
+		}
+	}
+
 	void collect_all_df(std::vector<std::unique_ptr<DesktopFile>>& as_structs, const std::array<std::string, 2>& dirs_to_search) {
+		struct winsize size;
+		ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 		std::vector<std::string> desktop_file_paths;
 		get_desktop_files(dirs_to_search, desktop_file_paths);
 
@@ -51,6 +64,10 @@ namespace Utils {
 			if (!path.ends_with(".desktop")) { continue; }
 			as_structs.push_back(Prsr::get_desktop_struct_pointer(path));
 			if (as_structs.back()->Actions.length()) Prsr::append_actions(path, as_structs);
+		}
+
+		for (auto& i : as_structs) {
+			truncate_comment(i, size.ws_col);
 		}
 	}
 

@@ -66,34 +66,34 @@ namespace Ascii {
 	static constexpr int tab = 9;
 	static constexpr char enter = '\n';
 
-	inline std::string_view change_foreground_color(ForegroundColors color = ForegroundColors::Default) {
+	inline std::string change_foreground_color(ForegroundColors color = ForegroundColors::Default) {
 		std::stringstream ret;
 		ret << esc << "[" << static_cast<int>(color) << "m";
-		return ret.view();
+		return ret.str();
 	}
 
-	inline std::string_view change_background_color(BackgroundColors color = BackgroundColors::Default) {
+	inline std::string change_background_color(BackgroundColors color = BackgroundColors::Default) {
 		std::stringstream ret;
 		ret << esc << "[" << static_cast<int>(color) << "m";
-		return ret.view();
+		return ret.str();
 	}
 
-	inline std::string_view go_to(int row, int column) {
+	inline std::string go_to(int row, int column) {
 		std::stringstream ret;
 		ret << esc << "[" << row << ";" << column << "H";
-		return ret.view();
+		return ret.str();
 	}
 
-	inline std::string_view beginning_rows_down(int rows) {
+	inline std::string beginning_rows_down(int rows) {
 		std::stringstream ret;
 		ret << esc << "[" << rows << "E";
-		return ret.view();
+		return ret.str();
 	}
 
-	inline std::string_view move_left(int cols) {
+	inline std::string move_left(int cols) {
 		std::stringstream ret;
 		ret << esc << "[" << cols << "D";
-		return ret.view();
+		return ret.str();
 	}
 }
 
