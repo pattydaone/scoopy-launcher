@@ -71,6 +71,7 @@ namespace Prsr {
 					break;
 				}
 			}
+			df_action.match_offset = -1;
 			desktop_structs.push_back(std::make_unique<DesktopFile> (df_action));
 		}
 	}

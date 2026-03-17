@@ -72,7 +72,7 @@ namespace Utils {
 	}
 
 	bool DfGt::operator()(const std::unique_ptr<DesktopFile>& df1, const std::unique_ptr<DesktopFile>& df2) {
-		return df1->match_score > df2->match_score;
+		return df1->match_score + df1->match_offset > df2->match_score + df2->match_offset;
 	}
 
 	bool prepare_terminal(bool on) {
