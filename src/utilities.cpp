@@ -18,22 +18,25 @@
 
 namespace Utils {
 	using namespace Ascii;
-	void get_desktop_files(const std::array<std::string, 2>& dirs, std::vector<std::string>& file_paths) {
+	void get_desktop_files(const std::vector<std::string>& dirs, std::vector<std::string>& file_paths) {
 		for (const auto& dir_path : dirs) {
-			for (auto dir_entry : std::filesystem::directory_iterator{ dir_path }) {
-				file_paths.push_back(dir_entry.path());
+			std::string maybe = dir_path + "/applications/";
+			if (std::filesystem::exists(maybe)) {
+				for (auto dir_entry : std::filesystem::directory_iterator{ maybe }) {
+					file_paths.push_back(dir_entry.path());
+				}
 			}
 		}
 	}
 
-	void split_actions(std::string_view actions, std::vector<std::string_view>& out_vec) {
+	void split(std::string_view str, std::vector<std::string>& out_vec, char delim) {
 		std::size_t pos { 0 };
 
-		while ((pos = actions.find(";", 0)) != std::string_view::npos) {
-			out_vec.emplace_back(actions.substr(0, pos));
-			actions.remove_prefix(pos + 1);
+		while ((pos = str.find(delim, 0)) != std::string::npos) {
+			out_vec.emplace_back(str.substr(0, pos));
+			str.remove_prefix(pos + 1);
 		}
-		out_vec.emplace_back(actions);
+		out_vec.emplace_back(str);
 	}
 
 	void set_action_knowns(DesktopFile& action, const std::unique_ptr<DesktopFile>& poi) {
@@ -54,7 +57,7 @@ namespace Utils {
 		}
 	}
 
-	void collect_all_df(std::vector<std::unique_ptr<DesktopFile>>& as_structs, const std::array<std::string, 2>& dirs_to_search) {
+	void collect_all_df(std::vector<std::unique_ptr<DesktopFile>>& as_structs, const std::vector<std::string>& dirs_to_search) {
 		struct winsize size;
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 		std::vector<std::string> desktop_file_paths;

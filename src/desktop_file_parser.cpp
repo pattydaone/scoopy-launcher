@@ -34,15 +34,15 @@ namespace Prsr {
 
 	void append_actions(const std::string& path, std::vector<std::unique_ptr<DesktopFile>>& desktop_structs) {
 		const std::size_t dfoi = desktop_structs.size() - 1;
-		std::vector<std::string_view> actions;
-		Utils::split_actions(desktop_structs[dfoi]->Actions, actions);
+		std::vector<std::string> actions;
+		Utils::split(desktop_structs[dfoi]->Actions, actions, ';');
 		std::ifstream desktop_file { path };
 		std::string line;
 		std::size_t equals;
 		std::string key;
 		std::string value;
 
-		for (const auto action : actions) {
+		for (const auto& action : actions) {
 			bool action_found = false;
 			std::stringstream to_find;
 			DesktopFile df_action;
