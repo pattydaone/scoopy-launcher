@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "ascii.hpp"
+
 enum class DesktopFileEntries {
     Null = 0,
     Name,
@@ -44,6 +46,31 @@ enum class Events {
 	exit,
 	launch,
 	find
+};
+
+// Comments will be provided, for now, for myself.
+struct Config {
+	/* The color of the selected entry, and whether that should be foreground, 
+	 * background, or both */
+	ForegroundColors selected_background_color = ForegroundColors::Magenta;
+	bool select_with_foreground = true;
+	BackgroundColors selected_foreground_color = BackgroundColors::Default;
+	bool select_with_background = false;
+	
+	ForegroundColors global_foreground_color = ForegroundColors::Default;
+	BackgroundColors global_background_color = BackgroundColors::Default;
+
+	bool remove_duplicates = true; // desktop file entries with duplicate names... or exec, haven't decided yet
+	bool filter_nameless = true; // desktop file entries where the name var is unset
+	bool search_comment = true; // Whether to fuzzy find within comments 
+	bool search_keywords = true; // whether to fuzzy find within keywords
+	bool search_categories = false; // you get it
+
+	bool print_comment = true; // whether to print out the comment to screen 
+	int cycle_down_key; // Consider string? idk, sounds hard to do...
+	int cycle_up_key; 
+	int select_key;
+	int exit_key;
 };
 
 #endif

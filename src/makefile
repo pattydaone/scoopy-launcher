@@ -13,8 +13,6 @@ build: $(files)
 	g++ $(obj_files) -o ../bin/main
 clean:
 	rm -f $(obj_files)
-run:
-	../bin/main
 debug: $(debug_files)
 	g++ -std=c++23 -Wall -g -I $(current_dir) -c $(debug_files)
 	g++ $(debug_obj_files) -o ../bin/main_debug

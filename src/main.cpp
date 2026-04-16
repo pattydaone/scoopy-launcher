@@ -10,7 +10,8 @@
 #include "utilities.hpp"
 
 
-int main() {
+int main(int argc, char** argv) {
+	
 	std::vector<std::unique_ptr<DesktopFile>> as_structs;
 	Event event { as_structs };
 
