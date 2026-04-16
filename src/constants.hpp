@@ -2,14 +2,10 @@
 #define CONSTANTS_HPP
 
 #include <string>
-#include <array>
 #include <cstdint>
 #include <cstdlib>
 
 const std::string home_dir { std::getenv("HOME") };
-const std::array<std::string, 2> dirs_to_search {
-    "/usr/share/applications", home_dir + "/.local/share/applications"
-};
 
 constexpr int word_begin_modifier = 10;
 constexpr int word_end_modifier = 5;

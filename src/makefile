@@ -6,7 +6,10 @@ debug_obj_files := main_debug.o desktop_file_parser.o utilities.o finder.o event
 
 current_dir := $(shell pwd)
 
-all: build clean
+all: bin build clean
+
+bin:
+	mkdir -p ../bin
 
 build: $(files)
 	g++ -std=c++23 -Wall -g -I $(current_dir) -c $(files)
