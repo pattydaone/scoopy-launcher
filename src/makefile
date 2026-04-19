@@ -1,8 +1,8 @@
-files := main.cpp desktop_file_parser.cpp utilities.cpp finder.cpp event.cpp
-obj_files := main.o desktop_file_parser.o utilities.o finder.o event.o
+files := main.cpp desktop_file_parser.cpp utilities.cpp finder.cpp event.cpp config_parser.cpp
+obj_files := main.o desktop_file_parser.o utilities.o finder.o event.o config_parser.o
 
-debug_files := main_debug.cpp desktop_file_parser.cpp utilities.cpp finder.cpp event.cpp
-debug_obj_files := main_debug.o desktop_file_parser.o utilities.o finder.o event.o
+debug_files := main_debug.cpp desktop_file_parser.cpp utilities.cpp finder.cpp event.cpp config_parser.cpp
+debug_obj_files := main_debug.o desktop_file_parser.o utilities.o finder.o event.o config_parser.o
 
 current_dir := $(shell pwd)
 

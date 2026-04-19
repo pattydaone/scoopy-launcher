@@ -13,8 +13,8 @@
 #include "finder.hpp"
 #include "utilities.hpp"
 
-Event::Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs)
-	: df_files { as_structs }, exit_proc { false }, selected_line(3) {
+Event::Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs, Config& conf)
+	: df_files { as_structs }, exit_proc { false }, selected_line(3), conf { conf } {
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 	event_queue.push_back(Events::redraw_screen);
 }
@@ -58,6 +58,7 @@ void Event::process_events() {
 
 void Event::launch() {
 	std::string exec { df_files[selected_line - 3]->Exec };
+	bool terminal = df_files[selected_line - 3]->terminal;
 	std::size_t percent = exec.find("%");
 	if (percent != std::string::npos) --percent; // Remove trailing space
 	pid_t pid = fork();
@@ -69,7 +70,7 @@ void Event::launch() {
 	else if (pid == 0) {
 		setsid();
 		setpgid(pid, pid);
-		std::vector<std::string> arg_list = Utils::get_args(exec.substr(0,percent));
+		std::vector<std::string> arg_list = Utils::get_args(exec.substr(0,percent), terminal, conf);
 		std::size_t arg_num = arg_list.size();
 		const char** args = new const char* [arg_num + 1];
 

@@ -30,6 +30,6 @@ namespace Utils {
 
 	const char* remove_trailing_space(std::string& inp);
 
-	std::vector<std::string> get_args(const std::string& exec);
+	std::vector<std::string> get_args(const std::string& exec, bool terminal, const Config& conf);
 }
 #endif

@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <memory>
 #include <ostream>
-#include <print>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -45,6 +44,7 @@ namespace Utils {
 		action.Icon = poi->Icon;
 		action.Categories = poi->Categories;
 		action.Keywords = poi->Keywords;
+		action.terminal = poi->terminal;
 	}
 
 	void truncate_comment(std::unique_ptr<DesktopFile>& df, int width) {
@@ -126,9 +126,10 @@ namespace Utils {
 		return inp.c_str();
 	}
 
-	std::vector<std::string> get_args(const std::string& exec) {
+	std::vector<std::string> get_args(const std::string& exec, bool terminal, const Config& conf) {
 		std::string_view exec_view = exec;
 		std::vector<std::string> arg_list {};
+		if (terminal) arg_list.push_back(conf.default_terminal_command);
 		std::size_t pos { 0 };
 		while ((pos = exec_view.find(" ", 0)) != std::string_view::npos) {
 			arg_list.emplace_back(exec_view.substr(0, pos));

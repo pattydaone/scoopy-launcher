@@ -20,6 +20,7 @@ class Event {
 	int selected_line;
 	struct winsize size;
 	std::size_t printed_entries;
+	Config conf;
 
 	void process_events();
 	void redraw_screen();
@@ -30,7 +31,7 @@ class Event {
 	void get_input();
 	void check_input();
 public:
-	Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs);
+	Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs, Config& conf);
 	void event_loop(int frequency);
 	void add_event(Events event);
 };
