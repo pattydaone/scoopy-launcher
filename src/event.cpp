@@ -182,7 +182,7 @@ void Event::resize() {
 	using namespace Ascii;
 	std::cout << esc << home << std::flush;
 	std::cout << esc << erase_line << std::flush;
-	std::cout << actual_out << std::flush;
+	std::cout << "> " << actual_out << std::flush;
 	std::cout << esc << save_pos << std::flush;
 
 	std::cout << go_to(2, 0) << std::flush;;
