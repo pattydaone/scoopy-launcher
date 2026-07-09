@@ -26,10 +26,14 @@ class Event {
 	void redraw_screen();
 	void launch();
 	void find();
+	void resize();
+
+	void print_line(const std::unique_ptr<DesktopFile>& df, bool selected);
 
 	void backspace_pressed();
 	void get_input();
 	void check_input();
+	void check_resize();
 public:
 	Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs, Config& conf);
 	void event_loop(int frequency);

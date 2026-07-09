@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 	}
 
 	Utils::collect_all_df(as_structs, dirs_to_search);
-	Utils::prepare_space();
+	Utils::prepare_space(config);
 
 	event.event_loop(update_freq);
 

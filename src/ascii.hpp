@@ -60,6 +60,8 @@ namespace Ascii {
 	static constexpr auto erase_to_end_line = "[0K"sv;
 	static constexpr auto erase_screen = "[2J"sv;
 	static constexpr auto home = "[H"sv;
+	static constexpr auto save_screen = "[?47h"sv;
+	static constexpr auto load_screen = "[?47l"sv;
 
 	static constexpr int esc_key = 27;
 	static constexpr int backspace = 127;

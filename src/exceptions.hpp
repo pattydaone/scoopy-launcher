@@ -4,13 +4,27 @@
 #include <exception>
 #include <string>
 
-class ConfigError : std::exception {
+class ConfigKeyError : std::exception {
 	std::string value;
 public:
-	ConfigError(const std::string& val) : value { val } {}
+	ConfigKeyError(const std::string& val) : value { val } {}
 
 	const char* what() const noexcept override {
 		return "Unrecognized config key";
+	}
+
+	const std::string& get_value() {
+		return value;
+	}
+};
+
+class ConfigValueError : std::exception {
+	std::string value;
+public:
+	ConfigValueError(const std::string& val) : value { val } {}
+
+	const char* what() const noexcept override {
+		return "Unrecognized config value";
 	}
 
 	const std::string& get_value() {

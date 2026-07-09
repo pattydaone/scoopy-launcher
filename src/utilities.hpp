@@ -24,7 +24,9 @@ namespace Utils {
 
 	void collect_all_df(std::vector<std::unique_ptr<DesktopFile>>& as_structs, const std::vector<std::string>& dirs_to_search);
 
-	void prepare_space();
+	void filter_df(std::vector<std::unique_ptr<DesktopFile>>& as_structs, const Config& conf);
+
+	void prepare_space(const Config& conf);
 
 	void clean_space();
 

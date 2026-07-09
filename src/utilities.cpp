@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <cstddef>
 #include <filesystem>
@@ -68,11 +70,20 @@ namespace Utils {
 			as_structs.push_back(Prsr::get_desktop_struct_pointer(path));
 			if (as_structs.back()->Actions.length()) Prsr::append_actions(path, as_structs);
 		}
-
+		/*
 		for (auto& i : as_structs) {
 			truncate_comment(i, size.ws_col);
-		}
+		}*/
 	}
+	/*
+	void filter_df(std::vector<std::unique_ptr<DesktopFile>>& as_structs, const Config& conf) {
+		if (conf.remove_duplicates) {
+			for (std::size_t i = 0; i < as_structs.size(); ++i) {
+				auto it = std::find_if(as_structs.begin(), as_structs.end(),
+									   [&as_structs, i](const auto&& x){ return as_structs[i]->Name == x->Name; });
+			}
+		}
+	}*/
 
 	bool DfGt::operator()(const std::unique_ptr<DesktopFile>& df1, const std::unique_ptr<DesktopFile>& df2) {
 		return df1->match_score + df1->match_offset > df2->match_score + df2->match_offset;
@@ -102,8 +113,8 @@ namespace Utils {
 		return 0 == tcsetattr(STDIN_FILENO, TCSANOW, &settings);
 	}
 
-	void prepare_space() {
-		prepare_terminal(true);
+	void prepare_space(const Config& conf) {
+		if (!prepare_terminal(true)) exit(1);
 
 		struct winsize size;
 		ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -114,10 +125,13 @@ namespace Utils {
 		std::cout << go_to(2, 0);
 		for (int i = 0; i < size.ws_col; ++i) { std::cout << "━"; }
 		std::cout << esc << home << "> " << std::flush;
+		std::cout << change_background_color(conf.global_background_color) << std::flush;
+		std::cout << change_foreground_color(conf.global_foreground_color) << std::flush;
 	}
 
 	void clean_space() {
 		std::cout << esc << erase_screen << esc << home << std::flush;
+		std::cout << change_background_color() << std::flush << change_foreground_color() << std::flush;
 		prepare_terminal(false);
 	}
 

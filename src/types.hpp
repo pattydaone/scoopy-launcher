@@ -48,6 +48,7 @@ enum class Events {
 	highlight,
 	exit,
 	launch,
+	resize,
 	find
 };
 
@@ -58,7 +59,6 @@ struct Config {
 	ForegroundColors selected_foreground_color = ForegroundColors::Magenta;
 	bool select_with_foreground = true;
 	BackgroundColors selected_background_color = BackgroundColors::Default;
-	bool select_with_background = false;
 	
 	ForegroundColors global_foreground_color = ForegroundColors::Default;
 	BackgroundColors global_background_color = BackgroundColors::Default;
@@ -82,16 +82,10 @@ struct Config {
 		if (key == "selection_background_color") { selected_background_color = static_cast<BackgroundColors>(std::stoi(value)); }
 		else if (key == "selection_foreground_color") { selected_foreground_color = static_cast<ForegroundColors>(std::stoi(value)); }
 		else if (key == "select_with") {
-			if (value == "foreground") {
-				select_with_foreground = true;
-				select_with_background = false;
-			}
-			else if (value == "background") {
-				select_with_foreground = false;
-				select_with_background = true;
-			}
+			if (value == "foreground") select_with_foreground = true;
+			else if (value == "background") select_with_foreground = false;
 			else {
-				throw(ConfigError(value));
+				throw(ConfigValueError(value));
 			}
 		}
 		else if (key == "background_color") { global_background_color = static_cast<BackgroundColors>(std::stoi(value)); }
@@ -109,7 +103,7 @@ struct Config {
 		else if (key == "default_terminal_command") { default_terminal_command = value; }
 		else if (key == "open_in_new_terminal") { open_in_new_terminal = (value[0] == 't' ? true : false); }
 		else {
-			throw(ConfigError(value));
+			throw(ConfigKeyError(value));
 		}
 	}
 };

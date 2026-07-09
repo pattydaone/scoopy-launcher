@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include <ostream>
+#include <sys/ioctl.h>
 #include <thread>
 
 #include <stdlib.h>
@@ -11,17 +12,20 @@
 #include "event.hpp"
 #include "ascii.hpp"
 #include "finder.hpp"
+#include "types.hpp"
 #include "utilities.hpp"
 
 Event::Event(std::vector<std::unique_ptr<DesktopFile>>& as_structs, Config& conf)
 	: df_files { as_structs }, exit_proc { false }, selected_line(3), conf { conf } {
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	event_queue.push_back(Events::resize);
 	event_queue.push_back(Events::redraw_screen);
 }
 
 void Event::event_loop(int frequency) {
 	while (!exit_proc) {
 		check_input();
+		check_resize();
 		if (!event_queue.empty()) process_events();
 		std::this_thread::sleep_for(std::chrono::milliseconds(frequency));
 	}
@@ -48,6 +52,9 @@ void Event::process_events() {
 				break;
 			case (Events::find):
 				 find();
+				break;
+			case (Events::resize):
+				resize();
 				break;
 			case (Events::Null):
 				break;
@@ -91,6 +98,41 @@ void Event::launch() {
 	}
 }
 
+void Event::print_line(const std::unique_ptr<DesktopFile>& df, bool selected) {
+	using namespace Ascii;
+	int printed_width = 2 + df->Name.length() + 2 + df->Comment.length();
+
+	std::cout << esc << erase_line << std::flush;
+	if (selected) {
+		std::cout << (conf.select_with_foreground ? 
+						change_foreground_color(conf.selected_foreground_color) : change_background_color(conf.selected_background_color)) << std::flush;
+		std::cout << " >" << df->Name;
+		if (conf.print_comment) {
+			if (printed_width > size.ws_col) {
+				std::cout << ": " << df->Comment.substr(0, size.ws_col - df->Name.length() - 7) << "...";
+			}
+			else {
+				std::cout << ": " << df->Comment;
+			}
+		}
+		std::cout << std::flush;
+		std::cout << change_foreground_color() << std::flush;
+		std::cout << beginning_rows_down(1) << std::flush;
+		return;
+	}
+	
+	std::cout << "▎ " << df->Name;
+	if (conf.print_comment) {
+		if (printed_width > size.ws_col) {
+			std::cout << ": " << df->Comment.substr(0, size.ws_col - df->Name.length() - 7) << "...";
+		}
+		else {
+			std::cout << ": " << df->Comment;
+		}
+	}
+	std::cout << beginning_rows_down(1);
+}
+
 void Event::redraw_screen() {
 	using namespace Ascii;
 	std::cout << esc << save_pos << std::flush;
@@ -102,16 +144,13 @@ void Event::redraw_screen() {
 				printed_entries = i;
 				break;
 			}
-			std::cout << esc << erase_line << std::flush;
+
 			if (static_cast<int>(i + 3) == selected_line) {
-				std::cout << change_foreground_color(ForegroundColors::Magenta) << std::flush;
-				std::cout << " >" << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
-				std::cout << change_foreground_color() << std::flush;
-				std::cout << beginning_rows_down(1) << std::flush;
+				print_line(df_files[i], true);
 				continue;
 			}
-			std::cout << "▎ " << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
-			std::cout << beginning_rows_down(1) << std::flush;
+
+			print_line(df_files[i], false);
 		}
 	}
 	else {
@@ -121,16 +160,12 @@ void Event::redraw_screen() {
 				printed_entries = i;
 				break;
 			}
-			std::cout << esc << erase_line << std::flush;
+
 			if (static_cast<int>(i + 3) == selected_line) {
-				std::cout << change_foreground_color(ForegroundColors::Magenta);
-				std::cout << " >" << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
-				std::cout << change_foreground_color() << std::flush;
-				std::cout << beginning_rows_down(1) << std::flush;
+				print_line(df_files[i], true);
 				continue;
 			}
-			std::cout << "▎ " << df_files[i]->Name << ": " << df_files[i]->Comment << std::flush;
-			std::cout << beginning_rows_down(1) << std::flush;
+			print_line(df_files[i], false);
 		}
 	}
 	std::cout << esc << load_pos << std::flush;
@@ -140,6 +175,19 @@ void Event::find() {
 	std::for_each(df_files.begin(), df_files.end(), 
 			[this](std::unique_ptr<DesktopFile>& df) { fuzzyfind(df, actual_out); });
 	std::sort(df_files.begin(), df_files.end(), df_gt);
+	redraw_screen();
+}
+
+void Event::resize() {
+	using namespace Ascii;
+	std::cout << esc << home << std::flush;
+	std::cout << esc << erase_line << std::flush;
+	std::cout << actual_out << std::flush;
+	std::cout << esc << save_pos << std::flush;
+
+	std::cout << go_to(2, 0) << std::flush;;
+	for (int i = 0; i < size.ws_col; ++i) { std::cout << "━"; }
+	std::cout << esc << load_pos << std::flush;
 	redraw_screen();
 }
 
@@ -193,5 +241,14 @@ void Event::check_input() {
 			std::cout << i << std::flush;
 		}
 		add_event(Events::find);
+	}
+}
+
+void Event::check_resize() {
+	struct winsize cur_size;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &cur_size);
+	if (cur_size.ws_col != size.ws_col || cur_size.ws_row != size.ws_row) {
+		size = cur_size;
+		add_event(Events::resize);
 	}
 }
